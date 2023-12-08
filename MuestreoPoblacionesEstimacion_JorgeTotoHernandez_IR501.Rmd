@@ -1,0 +1,168 @@
+---
+title: "Muestreo de poblaciones y estimación"
+subtitle: "AFDMD-111 Estadística"
+author: "Jorge Toto Hernandez"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    highlight: kate
+    cards: false
+---
+
+```{r setup, include=FALSE}
+#library(highcharter)
+library(TeachingSampling)
+# invalidate cache when the tufte version changes
+```
+
+
+
+
+# Introducción
+
+En estadística, los conceptos de población y muestra son sumamente importantes. Población se refiere al conjunto de todos los sujetos de interés, por ejemplo, al estudiar la edad de los estudiantes de la UQRoo Cancún, la población son todos los estudiantes del campus. Muestra, por otro lado, se refiere a un subconjunto de la población. Por ejemplo, los estudiantes que se encuentran en horario de 07:00-09:00 am, los estudiantes que se encuentran en la biblioteca, etc. Usualmente es muy común estudiar a las muestras y entonces para tomar muestras se consideran dos tipos de muestreo.
+
+- Muestreo aleatorio.
+- Muestreo no aleatorio.
+
+
+# Muestreo aleatorio
+
+Existen varios tipos de muestreo aleatorio, entre los cuales encontramos:
+
+- Muestreo aleatorio simple.
+- Muestreo sistemático.
+- Muestreo estratificado.
+- Muestreo de Poisson.
+
+## Muestreo aleatorio simple.
+
+El muestreo se puede realizar mediante el comando `sample`. Por ejemplo una muestra de tamaño $50$ de las primeras $15$ letras minúsculas del abecedario se realiza y grafica como:
+
+```{r sampSR}
+m <- as.factor(sample(letters[1:15], 50, replace=T))
+plot(m, col = "#6a994e")
+```
+
+Nótese que el comando `sample` tiene como parámetros `replace` y `prob`. 
+
+1. ¿Qué sucede si `replace=FALSE` en código anterior?.
+
+Si se establece replace=FALSE en el código anterior, significa que no se permite el reemplazo al seleccionar elementos de la población para formar la muestra. En otras palabras, cada elemento puede ser seleccionado solo una vez en la muestra. Si intentamos seleccionar más elementos de los que hay disponibles sin reemplazo, se generará un error.
+
+Al establecer replace=FALSE, R intentará seleccionar 50 letras minúsculas sin reemplazo de las primeras 15 letras del abecedario. Si intentamos seleccionar más de 15 elementos, se generará un error ya que no hay suficientes elementos únicos en la población para formar una muestra de tamaño 50 sin reemplazo.
+
+En el ejemplo sustituimos 50 por 15 para que no marque error.
+
+```{r}
+m <- as.factor(sample(letters[1:15], 15, replace=FALSE))
+plot(m, col = "#6a994e")
+
+```
+
+
+2. ¿Cuál es la diferencia entre `sample(letters[1:10],10, replace=T)` y `sample(letters[1:10],10)`?
+
+La diferencia entre sample(letters[1:10], 10, replace=T) y sample(letters[1:10], 10) radica en el uso del parámetro replace.
+
+1. sample(letters[1:10], 10, replace=T): En este caso, se está realizando un muestreo aleatorio simple con reemplazo. Esto significa que cada elemento seleccionado se devuelve a la población antes de realizar la siguiente selección. Como resultado, un mismo elemento puede ser seleccionado más de una vez en la muestra.
+
+2. sample(letters[1:10], 10): En este caso, no se está permitiendo el reemplazo (replace=FALSE es el valor predeterminado cuando no se especifica). Se está realizando un muestreo aleatorio simple sin reemplazo. Cada vez que se selecciona un elemento, este se excluye de la población, por lo que no puede ser seleccionado nuevamente en la misma muestra.
+
+3. ¿Y entre `sample(letters[1:6], 10, prob=c(0.5,0.1,0.1,0.1,0.1,0.1), replace = T)` y `sample(letters[1:6], 10, replace=T)`?
+
+La diferencia entre sample(letters[1:6], 10, prob=c(0.5,0.1,0.1,0.1,0.1,0.1), replace=T) y sample(letters[1:6], 10, replace=T) es: 
+
+1. sample(letters[1:6], 10, prob=c(0.5,0.1,0.1,0.1,0.1,0.1), replace=T): En este caso, se está realizando un muestreo aleatorio simple con reemplazo y se están especificando las probabilidades de selección para cada elemento. El argumento prob es un vector que indica las probabilidades asociadas con cada elemento de la población. En este ejemplo, se ha asignado una probabilidad del 50% al primer elemento y 10% a cada uno de los cinco elementos restantes.
+
+2. sample(letters[1:6], 10, replace=T): En este caso, se está realizando un muestreo aleatorio simple con reemplazo, pero no se están especificando probabilidades. En ausencia de probabilidades específicas, todos los elementos tienen la misma probabilidad de ser seleccionados.
+
+## Muestreo sistemático
+
+El muestreo sistemático funciona comenzando por un punto inicial aleatorio y de allá avanzando sistemáticamente un número fijo de pasos $a$ hasta llegar a $N$. Para ello se utiliza el comando `S.Sy` del paquete `TeachingSampling` (en caso de no tener instalado el paquete instalarlo con `install.packages("TeachingSampligng")`). Ahora mostraremos el proceso de muestrear las misma letras del abecedario.
+
+
+```{r muesSys}
+índices <- S.SY(26,4)
+letters[índices]
+# Los índices que se tomaron son:
+índices # Nótese que se inició aleatoriamente con 4 y de allá avanzo 4 unidades.
+```
+- Realice una muestra sistemática de la variable del dataset `starwars` (puede cargarlo con `data(starwars)`) y calcule la media de la altura (`height`) y la masa (`mass`).
+
+```{r}
+# Cargar el conjunto de datos starwars
+data(starwars)
+
+# Obtener los índices para la muestra sistemática
+indices_sistematicos <- S.SY(nrow(starwars), a = 3)  # Por ejemplo, avanzar cada 3 unidades
+
+# Obtener la muestra sistemática de starwars
+muestra_sistematica <- starwars[indices_sistematicos, ]
+
+# Calcular la media de la altura y la masa en la muestra sistemática
+media_altura <- mean(muestra_sistematica$height, na.rm = TRUE)
+media_masa <- mean(muestra_sistematica$mass, na.rm = TRUE)
+
+# Mostrar los resultados
+cat("Media de la Altura:", media_altura, "\n")
+cat("Media de la Masa:", media_masa, "\n")
+```
+
+
+- Realice un muestreo aleatorio simple usando sin reemplazo `sample` y calcule la media de la altura (`height`) y la masa (`mass`).
+
+```{r}
+data(starwars)
+
+# Establecer una semilla para reproducibilidad
+set.seed(123)
+
+# Realizar un muestreo aleatorio simple sin reemplazo
+muestra_aleatoria <- starwars[sample(nrow(starwars), size = 87, replace = FALSE), ]
+
+# Calcular la media de la altura y la masa en la muestra aleatoria
+media_altura_aleatoria <- mean(muestra_aleatoria$height, na.rm = TRUE)
+media_masa_aleatoria <- mean(muestra_aleatoria$mass, na.rm = TRUE)
+
+# Mostrar los resultados
+cat("Media de la Altura (Muestra Aleatoria):", media_altura_aleatoria, "\n")
+cat("Media de la Masa (Muestra Aleatoria):", media_masa_aleatoria, "\n")
+```
+
+
+## Muestreo estratificado
+
+Investigue el concepto de muestreo estratificado y realice un ejemplo con el comando `S.STPPS`. Nota: es muy importante crear un estrato o subgrupo.
+
+El muestreo estratificado es una técnica de muestreo en la cual la población se divide en subgrupos homogéneos llamados estratos, y luego se realiza un muestreo aleatorio simple o sistemático dentro de cada estrato. El propósito de la estratificación es garantizar que todos los subgrupos de interés estén representados en la muestra final.
+
+La estratificación es útil cuando la población exhibe variabilidad significativa en alguna característica clave, y se quiere asegurar que cada estrato esté representado proporcionalmente en la muestra.
+
+### Ejemplo con S.STPPS:
+
+```{r}
+
+# Crear la población
+poblacion <- data.frame(
+  sexo = rep(c("hombre", "mujer"), each = 100),
+  edad = rnorm(200, mean = 30, sd = 5)
+)
+
+# Crear los estratos
+poblacion$estrato <- cut(poblacion$edad, breaks = c(0, 25, 35, Inf))
+
+# Seleccionar la muestra
+muestra <- poblacion %>%
+  group_by(estrato) %>%
+  sample_n(size = 25)
+
+# Ver la muestra
+muestra
+
+```
+
+
+Fecha de entrega: Miércoles 6 de diciembre de 2023.
+
+Atte. Dr.Julio César Ramírez Pacheco
